@@ -1,0 +1,58 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    volumes:
+      - .:/usr/src/app
+    command: python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - sih_network
+    deploy:
+      resources:
+        limits:
+          memory: 256M 
+        reservations:
+          memory: 128M
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      # FIXED: Swapped hardcoded 'postgres' strings for dynamic .env variables
+      - POSTGRES_USER=${DATABASE_USERNAME}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_DB=${DATABASE_NAME}
+    command: >
+      postgres 
+      -c shared_buffers=16MB 
+      -c max_connections=20 
+      -c work_mem=4MB 
+      -c maintenance_work_mem=16MB
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+    healthcheck:
+      # FIXED: Healthcheck now checks your dynamic database username instead of hardcoded 'postgres'
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME} -d ${DATABASE_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sih_network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+networks:
+  sih_network:
+    driver: bridge
+
+volumes:
+  postgres-db:
