@@ -1,8 +1,8 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
-    # Enforce strict cloud configuration parameter safety
-    DATABASE_URL: str  # FIXED: Replaced individual credentials with the unified string
+    # Unified Cloud Environment Variables
+    DATABASE_URL: str  
     SECRET_KEY: str
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int

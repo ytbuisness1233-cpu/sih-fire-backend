@@ -14,7 +14,7 @@ async def create_user(user: schemas.UserCreate, db: AsyncSession = Depends(datab
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
         
     user_data = user.model_dump()
-    # SECURITY HARDENING: Overwrite any incoming role parameter to lock public access out completely
+    # Lock public accounts out of administrative clearance levels automatically
     user_data["role"] = models.RoleEnum.user
     
     hashed_password = await anyio.to_thread.run_sync(utils.hash, user_data["password"])
