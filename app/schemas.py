@@ -1,44 +1,30 @@
+# app/schemas.py
 from pydantic import BaseModel, EmailStr, ConfigDict
 from datetime import datetime
-from typing import Optional
-import enum
-
-# FIXED: Redefine the enum locally in schemas to completely kill the circular import bug.
-# This keeps models.py and schemas.py perfectly independent so Python never crashes on boot.
-class RoleEnum(str, enum.Enum):
-    user = "user"
-    admin = "admin"
-    official = "official"
+from typing import Optional, List, Dict
 
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
-    # SAFETY PATCH: Default registration to standard 'user'. 
-    # Let your teammate explicitly pass "official" in their frontend JSON payload during testing.
-    role: RoleEnum = RoleEnum.user
+    role: str = "user"
 
 class UserOut(BaseModel):
     id: int
     email: EmailStr
-    role: RoleEnum
-    
+    role: str
     model_config = ConfigDict(from_attributes=True)
 
 class Token(BaseModel):
     access_token: str
     token_type: str
 
-class TokenData(BaseModel):
-    id: Optional[str] = None
-
 class FireEventPublicOut(BaseModel):
     id: int
     region: str
     classification: str
+    danger_level: str
     created_at: datetime
-    
-    # FIXED: Added support for reading directly from database mapping keys (result.mappings().all())
-    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+    model_config = ConfigDict(from_attributes=True)
 
 class FireEventSensitiveOut(BaseModel):
     id: int
@@ -49,9 +35,28 @@ class FireEventSensitiveOut(BaseModel):
     satellite_source: str
     confidence: str
     osm_industrial_zone: Optional[str] = None
-    is_persistent_anomaly: bool
-    classification: str
-    region: str
+    classification: Optional[str] = "Thermal Anomaly"
+    danger_level: Optional[str] = "MODERATE"
+    chemical_released: Optional[str] = "None Detected"
+    scientific_impact: Optional[str] = "None Tracked"
+    inference_confidence: float = 0.90
+    is_persistent_anomaly: bool = False
+    region: str = "India"
     created_at: datetime
-    
-    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        use_enum_values=True,
+        populate_by_name=True
+    )
+
+class SpreadPredictionOut(BaseModel):
+    fire_id: int
+    origin_coordinates: Dict[str, float]
+    projected_centroid_24h: Dict[str, float]
+    rate_of_spread_kmh: float
+    projected_distance_24h_km: float
+    toxic_plume_radius_m: float
+    live_wind: Dict[str, float]
+    threatened_downstream_infrastructure: List[str]
+    ai_generated_incident_report: str

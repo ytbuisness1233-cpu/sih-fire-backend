@@ -22,9 +22,10 @@ services:
     container_name: sih_fastapi_backend
     restart: always
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    # This forces the Docker network bridge to route domain name lookups 
+    # through public Google servers, fixing the "Name or service not known" crash.
     dns:
       - 8.8.8.8
-      - 1.1.1.1
       - 8.8.4.4
     depends_on:
       db:
@@ -37,7 +38,6 @@ services:
       FIRMS_API_KEY: your_genuine_nasa_earthdata_key_here
       GEMINI_API_KEY: ""
       ANTHROPIC_API_KEY: ""
-      PYTHONPATH: /app:/app/app
     ports:
       - "8000:8000"
     volumes:

@@ -5,8 +5,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     gcc \
     curl \
-    ca-certificates \
-    && update-ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -16,9 +14,6 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 COPY . .
-
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH="/app:/app/app"
 
 EXPOSE 8000
 
